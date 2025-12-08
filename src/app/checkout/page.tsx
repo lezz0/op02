@@ -4,6 +4,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
+export const dynamic = "force-dynamic";
+
+
 export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
