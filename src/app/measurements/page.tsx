@@ -2,8 +2,9 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function MeasurementsPage() {
+function MeasurementsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get("code") || "";
@@ -167,4 +168,13 @@ function TextInput({
       className="w-full border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 outline-none transition focus:border-neutral-500"
     />
   );
+}
+
+export default function MeasurementsPage() {
+    return(
+        <Suspense fallback={<div>Loading...
+    </div>}>
+        <MeasurementsContent />
+        </Suspense>
+    )
 }
