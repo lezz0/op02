@@ -3,11 +3,12 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
-
-export default function CheckoutPage() {
+// Create a separate component that uses useSearchParams
+function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -57,78 +58,89 @@ export default function CheckoutPage() {
 
     if (usageError) {
       console.error(usageError);
-      // Do not block the user if usage increment fails
     }
 
     setLoading(false);
     setDone(true);
   };
 
-  return (
-    <div className="max-w-3xl space-y-8">
-      <div>
-        <p className="text-[11px] uppercase tracking-[0.25em] text-neutral-500">
-          Step 2 · Checkout
+  return done ? (
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-neutral-900 to-black">
+      <div className="max-w-md w-full bg-neutral-950/40 p-6 rounded-lg border border-neutral-800">
+        <h1 className="text-2xl font-bold text-white mb-4">Order placed!</h1>
+        <p className="text-neutral-400 mb-6">
+          Your shirt is being made. We&apos;ll ship it to you soon.
         </p>
-        <h1 className="mt-3 text-2xl font-light tracking-tight text-neutral-50">
-          Review your order.
-        </h1>
+        <button
+          onClick={() => router.push("/")}
+          className="w-full bg-white text-black px-4 py-2 rounded-md hover:bg-neutral-200 transition"
+        >
+          Back to home
+        </button>
+      </div>
+    </div>
+  ) : (
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-neutral-900 to-black">
+      <div className="max-w-2xl w-full bg-neutral-950/40 p-8 rounded-lg border border-neutral-800">
+        <h1 className="text-3xl font-bold text-white mb-6">Checkout</h1>
+
         <p className="mt-2 text-sm text-neutral-400">
           Your measurements are applied to our single quietly tailored shirt.
         </p>
         <p className="mt-1 text-[11px] text-neutral-500">
           Friend code: <span className="font-medium">{code}</span>
         </p>
-      </div>
 
-      <div className="grid gap-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <section className="space-y-4 rounded-lg border border-neutral-900 bg-neutral-950/40 p-6">
-          <h2 className="text-xs uppercase tracking-[0.22em] text-neutral-500">
-            The shirt
-          </h2>
-          <div className="aspect-[4/5] w-full rounded-md border border-neutral-800 bg-gradient-to-b from-neutral-900 to-black" />
-          <div className="flex items-center justify-between text-sm text-neutral-300">
-            <span>Olop Quiet Shirt</span>
-            <span className="text-neutral-100">SGD 320</span>
-          </div>
-          <p className="text-xs text-neutral-500">
-            Long-staple cotton, soft structure, stitched in small batches.
-          </p>
-        </section>
-
-        <section className="space-y-4 rounded-lg border border-neutral-900 bg-neutral-950/40 p-6 text-sm">
-          <h2 className="text-xs uppercase tracking-[0.22em] text-neutral-500">
-            Your details
-          </h2>
-          <Detail label="Name" value={name} />
-          <Detail label="Email" value={email} />
-          <Detail label="Address" value={address} />
-          <Detail label="Chest" value={`${chest} cm`} />
-          <Detail label="Waist" value={`${waist} cm`} />
-          <Detail label="Sleeve" value={`${sleeve} cm`} />
-          {error && <p className="text-xs text-red-400">{error}</p>}
-          {done ? (
-            <div className="space-y-2 pt-2">
-              <p className="text-xs text-emerald-400">
-                Order received. A confirmation will be sent to you shortly.
-              </p>
-              <button
-                onClick={() => router.push("/")}
-                className="mt-1 w-full border border-neutral-700 px-4 py-2 text-xs uppercase tracking-[0.22em] text-neutral-200"
-              >
-                Back to home
-              </button>
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+          <section className="space-y-4 rounded-lg border border-neutral-900 bg-neutral-950/40 p-6">
+            <h2 className="text-xs uppercase tracking-[0.22em] text-neutral-500">
+              The shirt
+            </h2>
+            <div className="aspect-[4/5] w-full rounded-md border border-neutral-800 bg-gradient-to-b from-neutral-900 to-black" />
+            <div className="flex items-center justify-between text-sm text-neutral-300">
+              <span>Olop Quiet Shirt</span>
+              <span className="text-neutral-100">SGD 320</span>
             </div>
-          ) : (
-            <button
-              onClick={handlePayNow}
-              disabled={loading}
-              className="mt-2 w-full border border-neutral-200 bg-neutral-50 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-black transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {loading ? "Processing..." : "Pay now (test)"}
-            </button>
+            <p className="text-xs text-neutral-500">
+              Long-staple cotton, soft structure, stitched in small batches.
+            </p>
+          </section>
+
+          <section className="space-y-4 rounded-lg border border-neutral-900 bg-neutral-950/40 p-6 text-sm">
+            <h2 className="text-xs uppercase tracking-[0.22em] text-neutral-500">
+              Your details
+            </h2>
+            <Detail label="Name" value={name} />
+            <Detail label="Email" value={email} />
+            <Detail label="Address" value={address} />
+            <Detail label="Chest" value={chest} />
+            <Detail label="Waist" value={waist} />
+            <Detail label="Sleeve" value={sleeve} />
+          </section>
+        </div>
+
+        <div className="mt-8 space-y-4">
+          {error && (
+            <p className="text-sm text-red-400 bg-red-950/30 p-3 rounded-md border border-red-900">
+              {error}
+            </p>
           )}
-        </section>
+          <button
+            onClick={() => router.push("/")}
+            className="mt-1 w-full border border-neutral-700 px-4 py-2 text-xs uppercase tracking-[0.22em] text-neutral-200"
+          >
+            Back to home
+          </button>
+          ) : (
+          <button
+            onClick={handlePayNow}
+            disabled={loading}
+            className="mt-2 w-full border border-neutral-200 bg-neutral-50 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-black transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {loading ? "Processing..." : "Pay now (test)"}
+          </button>
+          )
+        </div>
       </div>
     </div>
   );
@@ -142,5 +154,14 @@ function Detail({ label, value }: { label: string; value: string }) {
       </p>
       <p className="text-sm text-neutral-200 whitespace-pre-wrap">{value}</p>
     </div>
+  );
+}
+
+// Main export wrapped with Suspense
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Loading checkout...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }
